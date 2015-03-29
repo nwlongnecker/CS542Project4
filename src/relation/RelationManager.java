@@ -2,14 +2,8 @@ package relation;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.List;
 
 public class RelationManager {
-
-	public RelationManager() {
-		// TODO Auto-generated constructor stub
-	}
 	
 	public Writer select(Reader in) {
 		return null;
@@ -19,8 +13,7 @@ public class RelationManager {
 		return null;
 	}
 	
-	public Writer join(Reader relationOne, Reader relationTwo) {
+	public Writer join(Reader in1, Reader in2) {
 		return null;
 	}
-
 }
