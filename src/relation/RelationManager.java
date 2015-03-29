@@ -1,22 +1,26 @@
 package relation;
 
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Collection;
 import java.util.List;
 
 public class RelationManager {
 
 	public RelationManager() {
-		
+		// TODO Auto-generated constructor stub
 	}
 	
-	public Relation create(String relationName, List<String> attributes) {
+	public Writer select(Reader in) {
+		return null;
+	}
+
+	public Writer project(Reader in) {
 		return null;
 	}
 	
-	public Relation get(String relationName) {
+	public Writer join(Reader relationOne, Reader relationTwo) {
 		return null;
 	}
-	
-	public boolean delete(String relationName) {
-		return true;
-	}
+
 }
