@@ -5,6 +5,10 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Prepares a list of operations to perform on given relations and executes it all as a
+ * whole (concurrently using multithreading) when the executeQuery() method is called.
+ */
 public class QueryPlanner {
 	
 	private List<Operation> operations = new ArrayList<Operation>();

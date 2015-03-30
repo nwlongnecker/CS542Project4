@@ -4,6 +4,10 @@ import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
 
+/**
+ * Represents an operation that can be run as part of a query by
+ * the QueryPlanner class. Uses Open(), GetNext(), and Close().
+ */
 public abstract class Operation extends Thread {
 	
 	public static final String SEPARATOR = ",";

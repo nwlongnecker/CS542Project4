@@ -13,6 +13,10 @@ import java.util.List;
 
 import relation.QueryPlanner;
 
+/**
+ * Sample use of the the QueryPlanner. In this case, we extract all cities whose
+ * populations are greater than 40% of their entire country's population.
+ */
 public class SampleMain {
 	private static final String countryFilePath = "country.csv";
 	private static final String cityFilePath = "city.csv";
@@ -52,12 +56,12 @@ public class SampleMain {
 		PipedWriter selectRelationWriter = new PipedWriter();
 		selectRelationReader.connect(selectRelationWriter);
 		qp.select(joinedRelationReader, selectRelationWriter, 1, 2, (totalPop, cityPop) -> 
-				Integer.parseInt(totalPop.replaceAll("\"","")) * 0.4 < Integer.parseInt(cityPop.replaceAll("\"","")));
+				Integer.parseInt(totalPop.replaceAll("\"","")) * 0.4 <= Integer.parseInt(cityPop.replaceAll("\"","")));
 		
 		// Project the final result
 		Writer finalProjectionWriter = new OutputStreamWriter(System.out);
 		List<Integer> keepFinal = new ArrayList<Integer>();
-		keepFinal.add(3); keepFinal.add(2); keepFinal.add(1);
+		keepFinal.add(3);
 		qp.project(selectRelationReader, finalProjectionWriter, keepFinal);
 		
 		// Run the query

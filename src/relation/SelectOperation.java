@@ -3,8 +3,11 @@ package relation;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
-import java.util.Comparator;
 
+/**
+ * Executes a select operation on a relations based on a specified conditional. The output
+ * is written to a buffer as GetNext() is called, eventually sending EOF with Close().
+ */
 public class SelectOperation extends Operation {
 	private int compareOne, compareTwo;
 	private Conditional1<String> conditional1 = null;

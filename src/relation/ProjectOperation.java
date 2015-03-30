@@ -5,6 +5,10 @@ import java.io.Writer;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Executes a project operation on a relation for one or more specified indexes. The output
+ * is written to a buffer as GetNext() is called, eventually sending EOF with Close().
+ */
 public class ProjectOperation extends Operation {
 	
 	private List<Integer> indicesToKeep;

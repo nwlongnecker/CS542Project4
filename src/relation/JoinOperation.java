@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 
+/**
+ * Executes a join operation on two relations based on a specified conditional. The output
+ * is written to a buffer as GetNext() is called, eventually sending EOF with Close().
+ */
 public class JoinOperation extends Operation {
 	private Reader in2;
 	private int index1, index2;
