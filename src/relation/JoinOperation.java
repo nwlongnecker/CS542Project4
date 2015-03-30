@@ -71,7 +71,7 @@ public class JoinOperation extends Operation {
 		if (character <= 0 && builder.length() == 0) {
 			return null;
 		}
-		return builder.toString();
+		return builder.toString().trim();
 	}
 	
 }

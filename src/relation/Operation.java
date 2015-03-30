@@ -4,7 +4,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
 
-public abstract class Operation {
+public abstract class Operation extends Thread {
 	
 	public static final String SEPARATOR = ",";
 	
@@ -38,7 +38,16 @@ public abstract class Operation {
 		if (character <= 0 && builder.length() == 0) {
 			return null;
 		}
-		return builder.toString();
+		return builder.toString().trim();
 	}
 
+	public void run() {
+		try {
+			open();
+			getNext();
+			close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
