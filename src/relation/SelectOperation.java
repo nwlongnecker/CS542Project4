@@ -2,22 +2,30 @@ package relation;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.io.IOException;
+import java.util.Comparator;
 
 public class SelectOperation extends Operation {
-	
-	public SelectOperation(Reader in, Writer out) {
+	private int compareOn;
+	private Conditional1<String> conditional;
+
+	public SelectOperation(Reader in, Writer out, int compareOn, Conditional1<String> conditional) {
 		super(in, out);
+		this.compareOn = compareOn;
+		this.conditional = conditional;
 	}
 
-	public void open() {
-		
-	}
-	
-	public void getNext() {
-		
-	}
+	@Override
+	public void getNext() throws IOException {
+		String line = null;
 
-	public void close() {
-		
+		while ((line = readNextLine()) != null) {
+			// use comma as separator
+			String[] tuple = line.split(SEPARATOR);
+			
+			if (conditional.compare(tuple[compareOn])) {
+				out.write(line+'\n');
+			}
+		}
 	}
 }
