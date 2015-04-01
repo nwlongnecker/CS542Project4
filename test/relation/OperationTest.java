@@ -43,7 +43,9 @@ public class OperationTest {
 		OutputStream output = new ByteArrayOutputStream();
 		Writer out = new OutputStreamWriter(output);
 		
-		Operation select = new SelectOperation(in, out, 4, value -> Integer.parseInt(value) > 500000);
+		List<Integer> compareOn = new ArrayList<Integer>();
+		compareOn.add(4);
+		Operation select = new SelectOperation(in, out, compareOn, value -> Integer.parseInt(value.get(0)) > 500000);
 		
 		select.open();
 		select.getNext();
@@ -61,7 +63,11 @@ public class OperationTest {
 		OutputStream output = new ByteArrayOutputStream();
 		Writer out = new OutputStreamWriter(output);
 		
-		Operation join = new JoinOperation(in, in2, out, 0, 2, (value1, value2) -> value1.equals(value2));
+		List<Integer> attributesOne = new ArrayList<Integer>();
+		attributesOne.add(0);
+		List<Integer> attributesTwo = new ArrayList<Integer>();
+		attributesTwo.add(2);
+		Operation join = new JoinOperation(in, in2, out, attributesOne, attributesTwo, (value1, value2) -> value1.get(0).equals(value2.get(0)));
 		
 		join.open();
 		join.getNext();

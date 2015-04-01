@@ -17,24 +17,11 @@ public class QueryPlanner {
 	 * Performs a select operation on the data, where a single attribute is checked against a value to see if it matches.
 	 * @param in A reader from the initial relation.
 	 * @param out A writer to write the resulting relation to.
-	 * @param compareOn The attribute (column index) to pass to the conditional.
-	 * @param conditional A lambda expression for comparing an attribute to determine whether it matches the select criteria.
+	 * @param compareOn The attributes (column indices) to pass to the conditional.
+	 * @param conditional A lambda expression for comparing attributes to determine whether the tuple matches the select criteria.
 	 */
-	public void select(Reader in, Writer out, int compareOn, Conditional1<String> conditional) {
+	public void select(Reader in, Writer out, List<Integer> compareOn, Conditional<String> conditional) {
 		Operation select = new SelectOperation(in, out, compareOn, conditional);
-		operations.add(select);
-	}
-	
-	/**
-	 * Performs a select operation on the data where two attributes are checked against each other to see if they fit the match criteria.
-	 * @param in A reader from the initial relation.
-	 * @param out A writer to write the resulting relation to.
-	 * @param compareOne The first attribute (column index) to pass to the conditional.
-	 * @param compareTwo The second attribute (column index) to pass to the conditional.
-	 * @param conditional A lambda expression for comparing two attributes to determine whether it matches the select criteria.
-	 */
-	public void select(Reader in, Writer out, int compareOne, int compareTwo, Conditional2<String> conditional) {
-		Operation select = new SelectOperation(in, out, compareOne, compareTwo, conditional);
 		operations.add(select);
 	}
 
@@ -54,12 +41,12 @@ public class QueryPlanner {
 	 * @param in1 A reader from the first relation to join on. This should be the smaller relation.
 	 * @param in2 A reader from second relation to join on. This should be the larger relation.
 	 * @param out A writer to write the resulting relation.
-	 * @param index1 The attribute (column index) in the first relation to pass to the conditional.
-	 * @param index2 The attribute (column index) in the second relation to pass to the conditional.
-	 * @param condtional A lambda expression for comparing two attributes and determining whether they should be included in the result.
+	 * @param indicesOne The attributes (column index) in the first relation to pass to the conditional.
+	 * @param indicesTwo The attributes (column index) in the second relation to pass to the conditional.
+	 * @param condtional A lambda expression for comparing the attributes and determining whether the tuple should be included in the result.
 	 */
-	public void join(Reader in1, Reader in2, Writer out, int index1, int index2, Conditional2<String> condtional) {
-		Operation join = new JoinOperation(in1, in2, out, index1, index2, condtional);
+	public void join(Reader in1, Reader in2, Writer out, List<Integer> indicesOne, List<Integer> indicesTwo, JoinConditional<String> conditional) {
+		Operation join = new JoinOperation(in1, in2, out, indicesOne, indicesTwo, conditional);
 		operations.add(join);
 	}
 	

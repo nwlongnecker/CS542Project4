@@ -49,14 +49,20 @@ public class SampleMain {
 		PipedReader joinedRelationReader = new PipedReader();
 		PipedWriter joinedRelationWriter = new PipedWriter();
 		joinedRelationReader.connect(joinedRelationWriter);
-		qp.join(projectCountryReader, projectCityReader, joinedRelationWriter, 0, 0, (value1, value2) -> value1.equals(value2));
+		List<Integer> attributesOne = new ArrayList<Integer>();
+		List<Integer> attributesTwo = new ArrayList<Integer>();
+		attributesOne.add(0);
+		attributesTwo.add(0);
+		qp.join(projectCountryReader, projectCityReader, joinedRelationWriter, attributesOne, attributesTwo, (value1, value2) -> value1.equals(value2));
 		
 		// Set up a select on the joined relation
 		PipedReader selectRelationReader = new PipedReader();
 		PipedWriter selectRelationWriter = new PipedWriter();
 		selectRelationReader.connect(selectRelationWriter);
-		qp.select(joinedRelationReader, selectRelationWriter, 1, 2, (totalPop, cityPop) -> 
-				Integer.parseInt(totalPop.replaceAll("\"","")) * 0.4 <= Integer.parseInt(cityPop.replaceAll("\"","")));
+		List<Integer> selectOn = new ArrayList<Integer>();
+		selectOn.add(1); selectOn.add(2);
+		qp.select(joinedRelationReader, selectRelationWriter, selectOn, (populations) -> 
+				Integer.parseInt(populations.get(0).replaceAll("\"","")) * 0.4 <= Integer.parseInt(populations.get(1).replaceAll("\"","")));
 		
 		// Project the final result
 		Writer finalProjectionWriter = new OutputStreamWriter(System.out);
