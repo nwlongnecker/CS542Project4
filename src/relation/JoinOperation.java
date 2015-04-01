@@ -58,14 +58,14 @@ public class JoinOperation extends Operation {
 						builder.append(element + SEPARATOR);
 					}
 					int j = 0;
-					while (attributesTwo.contains(lineTwo[j])) {
+					while (indicesTwo.contains(j)) {
 						j++;
 					}
 					if (j < lineTwo.length) {
 						builder.append(lineTwo[j]);
 					}
 					for (int i = j + 1; i < lineTwo.length; i++) {
-						if(!attributesTwo.contains(lineTwo[i])) {
+						if(!indicesTwo.contains(i)) {
 							builder.append(SEPARATOR);
 							builder.append(lineTwo[i]);
 						}
