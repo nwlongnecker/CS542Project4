@@ -12,11 +12,11 @@ import java.util.List;
  */
 public class UpdateOperation extends Operation {
 	private List<Integer> compareOn;
-	private Conditional<String> conditional;
+	private Conditional<String, Boolean> conditional;
 	private List<Integer> updateIndices;
-	private List<String> newValues;
+	private Conditional<String, String> newValues;
 
-	public UpdateOperation(Reader in, Writer out, List<Integer> compareOn, Conditional<String> conditional, List<Integer> updateIndices, List<String> newValues) {
+	public UpdateOperation(Reader in, Writer out, List<Integer> compareOn, Conditional<String, Boolean> conditional, List<Integer> updateIndices, Conditional<String, String> newValues) {
 		super(in, out);
 		this.compareOn = compareOn;
 		this.conditional = conditional;
@@ -37,10 +37,9 @@ public class UpdateOperation extends Operation {
 				attributes.add(tuple[i]);
 			}
 			try {
-				if (conditional.compare(attributes)) {
-//					transaction.addUpdate();
+				if (conditional.getResult(attributes)) {
 					for (int i = 0; i < updateIndices.size(); i++) {
-						tuple[updateIndices.get(i)] = newValues.get(i);
+						tuple[updateIndices.get(i)] = newValues.getResult(attributes);
 					}
 					StringBuilder builder = new StringBuilder("");
 					for (int i = 0; i < tuple.length-1; i++) {
@@ -53,7 +52,9 @@ public class UpdateOperation extends Operation {
 				} else {
 					out.write(line+'\n');
 				}
-			} catch (Exception e) {}
+			} catch (Exception e) {
+				// do nothing
+			}
 		}
 	}
 }
