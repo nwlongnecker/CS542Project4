@@ -38,6 +38,7 @@ public class UpdateOperation extends Operation {
 			}
 			try {
 				if (conditional.compare(attributes)) {
+//					transaction.addUpdate();
 					for (int i = 0; i < updateIndices.size(); i++) {
 						tuple[updateIndices.get(i)] = newValues.get(i);
 					}
@@ -52,7 +53,7 @@ public class UpdateOperation extends Operation {
 				} else {
 					out.write(line+'\n');
 				}
-			} catch (Exception e) {e.printStackTrace();}
+			} catch (Exception e) {}
 		}
 	}
 }

@@ -5,6 +5,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import logger.Transaction;
+
 /**
  * Prepares a list of operations to perform on given relations and executes it all as a
  * whole (concurrently using multithreading) when the executeQuery() method is called.
@@ -52,9 +54,11 @@ public class QueryPlanner {
 	
 	/**
 	 * Runs the query by starting a thread for each operation.
+	 * @param transaction The transaction associated with this query
 	 */
-	public void executeQuery() {
+	public void executeQuery(Transaction transaction) {
 		for(Operation op : operations) {
+			op.setTransaction(transaction);
 			op.start();
 		}
 	}

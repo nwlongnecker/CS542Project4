@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import logger.Transaction;
 import relation.QueryPlanner;
 
 /**
@@ -71,6 +72,6 @@ public class SampleMain {
 		qp.project(selectRelationReader, finalProjectionWriter, keepFinal);
 		
 		// Run the query
-		qp.executeQuery();
+//		qp.executeQuery(new Transaction());
 	}
 }

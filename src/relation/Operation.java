@@ -4,6 +4,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
 
+import logger.Transaction;
+
 /**
  * Represents an operation that can be run as part of a query by
  * the QueryPlanner class. Uses Open(), GetNext(), and Close().
@@ -14,6 +16,7 @@ public abstract class Operation extends Thread {
 	
 	protected Reader in;
 	protected Writer out;
+	protected Transaction transaction;
 
 	public Operation(Reader in, Writer out) {
 		this.in = in;
@@ -43,6 +46,10 @@ public abstract class Operation extends Thread {
 			return null;
 		}
 		return builder.toString().trim();
+	}
+	
+	public void setTransaction(Transaction transaction) {
+		this.transaction = transaction;
 	}
 
 	public void run() {
