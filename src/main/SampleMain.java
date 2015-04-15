@@ -10,8 +10,10 @@ import java.util.List;
 import relation.Database;
 
 /**
- * Sample use of the the QueryPlanner. In this case, we extract all cities whose
- * populations are greater than 40% of their entire country's population.
+ * Sample use of the the Database class. In this case, we create two databases with identical
+ * city and country relations. We update the relations in the first database to have 2% increases
+ * in all their populations, copy its log file to the directory of the second database, and then
+ * "sync" the second database (using the undo/redo log) so it receives the same 2% changes.
  */
 public class SampleMain {
 
