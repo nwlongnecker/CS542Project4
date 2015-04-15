@@ -53,7 +53,7 @@ public class Database {
 
 	/**
 	 * Executes an update operation on the given relation for the transaction whose ID is provided.
-	 * @throws InterruptedException 
+	 * @throws InterruptedException If any update threads are interrupted.
 	 */
 	public void update(int transactionNum, String relationName, List<Integer> compareOn, Conditional<String, Boolean> conditional,
 			List<Integer> updateIndices, Conditional<String, String> newValues) throws IOException, InterruptedException {
@@ -71,10 +71,9 @@ public class Database {
 			update.join();
 
 			// Replace the old relation file with the new one.
-			File updated = new File(databaseFolderPath + "/" + relationName + "_update.csv");
+			File updated = new File(databaseFolderPath + "/" + relationName + "_updated.csv");
 			File old = new File(databaseFolderPath + "/" + relationName + ".csv");
-			old.delete();
-			if (!updated.renameTo(old)) {
+			if (!old.delete() || !updated.renameTo(old)) {
 				System.out.println("Failed to rename file, results in _updated.csv");
 			}
 		}
@@ -100,11 +99,11 @@ public class Database {
 		Collection<Transaction> recoveredLog = Logger.getLogger().recoverLog();
 		Relation cities = new Relation(databaseFolderPath + "/city.csv");
 		Relation countries = new Relation(databaseFolderPath + "/country.csv");
-		for(Transaction transaction: recoveredLog) {
-			if(transaction.isCommitted()) {
-				// Redo the transaction
+		for (Transaction transaction: recoveredLog) {
+			if (transaction.isCommitted()) {
+				// Redo the transaction.
 				List<LogRecord> redoLogs = transaction.getLogRecords();
-				for(LogRecord log : redoLogs) {
+				for (LogRecord log : redoLogs) {
 					if(log.getRelationName().equals("city")) {
 						cities.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getNewValue());
 					} else {
@@ -112,10 +111,10 @@ public class Database {
 					}
 				}
 			} else {
-				// Undo the transaction
+				// Undo the transaction.
 				List<LogRecord> undoLogs = transaction.getLogRecords();
-				for(LogRecord log : undoLogs) {
-					if(log.getRelationName().equals("city")) {
+				for (LogRecord log : undoLogs) {
+					if (log.getRelationName().equals("city")) {
 						cities.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
 					} else {
 						countries.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
@@ -125,20 +124,5 @@ public class Database {
 		}
 		cities.writeRelationToFile(databaseFolderPath + "/newCity.csv");
 		countries.writeRelationToFile(databaseFolderPath + "/newCountry.csv");
-		
-//		// Apply the undo/redo logs if they exist.
-//		Files.walk(Paths.get(databaseFolderPath)).forEach(filePath -> {
-//			if (Files.isRegularFile(filePath) && filePath.endsWith(".log")) {
-//				try {
-//					List<String> lines = Files.readAllLines(filePath);
-//					for (String line : lines) {
-//						// Parse transactions and execute them.
-//					}
-//
-//				} catch (Exception e) {
-//					// Do nothing.
-//				}
-//			}
-//		});
 	}
 }

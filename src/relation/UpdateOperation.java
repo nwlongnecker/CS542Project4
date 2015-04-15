@@ -63,7 +63,7 @@ public class UpdateOperation extends Operation {
 				}
 				rowNumber++;
 			} catch (Exception e) {
-				// do nothing
+				// do nothing, continue the update
 			}
 		}
 	}

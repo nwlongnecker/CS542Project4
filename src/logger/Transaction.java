@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import relation.Database;
-
 /**
  * Represents a database transaction
  * @author Nathan

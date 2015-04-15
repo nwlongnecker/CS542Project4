@@ -24,10 +24,17 @@ public class SampleMain {
 		
 		// Create a new Database object and update the relations as requested in the project spec.
 		Database db = new Database("sampleDatabase");
+		// Begin a transaction.
 		db.startTransaction(1);
-		db.update(1, "country", countryIndices, (value) -> true, countryIndices, (value) -> "\"" + Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
-		db.update(1, "city", cityIndices, (value) -> true, cityIndices, (value) -> "\"" + Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
+		// Multiply every population in the countries relation by 1.02 (increase by 2%).
+		db.update(1, "country", countryIndices, (value) -> true, countryIndices, (value) -> "\"" +
+				Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
+		// Multiply every population in the countries relation by 1.02 (increase by 2%).
+		db.update(1, "city", cityIndices, (value) -> true, cityIndices, (value) -> "\"" +
+				Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
+		// Commit the transaciton.
 		db.commit(1);
+		// This method can be used at any time to sync with the database log.
 		db.syncWithLog();
 	}
 }
