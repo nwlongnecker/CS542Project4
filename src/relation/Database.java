@@ -8,11 +8,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import logger.LogRecord;
+import logger.Logger;
+import logger.Transaction;
 
 /**
  * Represents a folder containing relations and an undo/redo log that can have updates
@@ -23,7 +26,7 @@ public class Database {
 	// Used to keep track of where the relation/log files are located.
 	private String databaseFolderPath;
 	// Used to keep track of started/committed transactions.
-	private Map<Integer, Boolean> transactions = new HashMap<Integer, Boolean>();
+	private Map<Integer, Transaction> transactions = new HashMap<Integer, Transaction>();
 
 	/**
 	 * Constructor for the Database, will sync with the log file if it exists.
@@ -44,8 +47,7 @@ public class Database {
 		
 		// Make sure this transaction ID has not yet been used.
 		if (!transactions.containsKey(transactionNum)) {
-			transactions.put(transactionNum, false);
-			// Log that the transaction started.
+			transactions.put(transactionNum, new Transaction(transactionNum));
 		}
 	}
 
@@ -57,13 +59,14 @@ public class Database {
 			List<Integer> updateIndices, Conditional<String, String> newValues) throws IOException, InterruptedException {
 		
 		// Make sure that the transaction has been started but not yet committed.
-		if (transactions.containsKey(transactionNum) && !transactions.get(transactionNum)) {
+		if (transactions.containsKey(transactionNum) && !transactions.get(transactionNum).isCommitted()) {
 			// Create a reader and writer for the operation's input/output.
 			Reader fileReader = new BufferedReader(new FileReader(databaseFolderPath + "/" + relationName + ".csv"));
 			Writer fileWriter = new BufferedWriter(new FileWriter(databaseFolderPath + "/" + relationName + "_update.csv"));
 
 			// Perform the update operation.
-			Operation update = new UpdateOperation(fileReader, fileWriter, compareOn, conditional, updateIndices, newValues);
+			Operation update = new UpdateOperation(fileReader, fileWriter, relationName, compareOn, conditional, updateIndices, newValues);
+			update.setTransaction(transactions.get(transactionNum));
 			update.start();
 			update.join();
 
@@ -71,7 +74,9 @@ public class Database {
 			File updated = new File(databaseFolderPath + "/" + relationName + "_update.csv");
 			File old = new File(databaseFolderPath + "/" + relationName + ".csv");
 			old.delete();
-			updated.renameTo(old);
+			if (!updated.renameTo(old)) {
+				System.out.println("Failed to rename file, results in _updated.csv");
+			}
 		}
 	}
 
@@ -82,9 +87,8 @@ public class Database {
 	public void commit(int transactionNum) {
 		
 		// Make sure that the transaction has been started but not yet committed.
-		if (transactions.containsKey(transactionNum) && !transactions.get(transactionNum)) {
-			transactions.put(transactionNum, true);
-			// Log that the transaction was committed.
+		if (transactions.containsKey(transactionNum) && !transactions.get(transactionNum).isCommitted()) {
+			transactions.get(transactionNum).commit();
 		}
 	}
 
@@ -93,20 +97,48 @@ public class Database {
 	 * @throws IOException If there is no directory at the databseFolderPath location.
 	 */
 	public void syncWithLog() throws IOException {
-		
-		// Apply the undo/redo logs if they exist.
-		Files.walk(Paths.get(databaseFolderPath)).forEach(filePath -> {
-			if (Files.isRegularFile(filePath) && filePath.endsWith(".log")) {
-				try {
-					List<String> lines = Files.readAllLines(filePath);
-					for (String line : lines) {
-						// Parse transactions and execute them.
+		Collection<Transaction> recoveredLog = Logger.getLogger().recoverLog();
+		Relation cities = new Relation(databaseFolderPath + "/city.csv");
+		Relation countries = new Relation(databaseFolderPath + "/country.csv");
+		for(Transaction transaction: recoveredLog) {
+			if(transaction.isCommitted()) {
+				// Redo the transaction
+				List<LogRecord> redoLogs = transaction.getLogRecords();
+				for(LogRecord log : redoLogs) {
+					if(log.getRelationName().equals("city")) {
+						cities.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getNewValue());
+					} else {
+						countries.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getNewValue());
 					}
-
-				} catch (Exception e) {
-					// Do nothing.
+				}
+			} else {
+				// Undo the transaction
+				List<LogRecord> undoLogs = transaction.getLogRecords();
+				for(LogRecord log : undoLogs) {
+					if(log.getRelationName().equals("city")) {
+						cities.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
+					} else {
+						countries.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
+					}
 				}
 			}
-		});
+		}
+		cities.writeRelationToFile(databaseFolderPath + "/newCity.csv");
+		countries.writeRelationToFile(databaseFolderPath + "/newCountry.csv");
+		
+//		// Apply the undo/redo logs if they exist.
+//		Files.walk(Paths.get(databaseFolderPath)).forEach(filePath -> {
+//			if (Files.isRegularFile(filePath) && filePath.endsWith(".log")) {
+//				try {
+//					List<String> lines = Files.readAllLines(filePath);
+//					for (String line : lines) {
+//						// Parse transactions and execute them.
+//					}
+//
+//				} catch (Exception e) {
+//					// Do nothing.
+//				}
+//			}
+//		});
 	}
 }

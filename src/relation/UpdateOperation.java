@@ -6,6 +6,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import logger.LogRecord;
+
 /**
  * Executes an update operation on a relation based on a specified conditional. The output
  * is written to a buffer as GetNext() is called, eventually sending EOF with Close().
@@ -15,13 +17,17 @@ public class UpdateOperation extends Operation {
 	private Conditional<String, Boolean> conditional;
 	private List<Integer> updateIndices;
 	private Conditional<String, String> newValues;
+	private String relationName;
+	private int rowNumber;
 
-	public UpdateOperation(Reader in, Writer out, List<Integer> compareOn, Conditional<String, Boolean> conditional, List<Integer> updateIndices, Conditional<String, String> newValues) {
+	public UpdateOperation(Reader in, Writer out, String relationName, List<Integer> compareOn, Conditional<String, Boolean> conditional, List<Integer> updateIndices, Conditional<String, String> newValues) {
 		super(in, out);
 		this.compareOn = compareOn;
 		this.conditional = conditional;
 		this.updateIndices = updateIndices;
 		this.newValues = newValues;
+		this.relationName = relationName;
+		rowNumber = 0;
 	}
 
 	@Override
@@ -39,7 +45,10 @@ public class UpdateOperation extends Operation {
 			try {
 				if (conditional.getResult(attributes)) {
 					for (int i = 0; i < updateIndices.size(); i++) {
-						tuple[updateIndices.get(i)] = newValues.getResult(attributes);
+						String newValue = newValues.getResult(attributes);
+						String oldValue = tuple[updateIndices.get(i)];
+						tuple[updateIndices.get(i)] = newValue;
+						transaction.addLogRecord(new LogRecord(transaction.getTransactionID(), relationName, rowNumber, updateIndices.get(i), oldValue, newValue));
 					}
 					StringBuilder builder = new StringBuilder("");
 					for (int i = 0; i < tuple.length-1; i++) {
@@ -52,6 +61,7 @@ public class UpdateOperation extends Operation {
 				} else {
 					out.write(line+'\n');
 				}
+				rowNumber++;
 			} catch (Exception e) {
 				// do nothing
 			}

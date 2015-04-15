@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import relation.Database;
+
 /**
  * Represents a database transaction
  * @author Nathan
@@ -36,6 +38,10 @@ public class Transaction implements Serializable {
 	 */
 	public int getTransactionID() {
 		return transactionId;
+	}
+	
+	public List<LogRecord> getLogRecords() {
+		return logRecords;
 	}
 	
 	public boolean isCommitted() {

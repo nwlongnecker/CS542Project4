@@ -28,5 +28,6 @@ public class SampleMain {
 		db.update(1, "country", countryIndices, (value) -> true, countryIndices, (value) -> "\"" + Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
 		db.update(1, "city", cityIndices, (value) -> true, cityIndices, (value) -> "\"" + Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
 		db.commit(1);
+		db.syncWithLog();
 	}
 }

@@ -22,7 +22,7 @@ public class Logger {
 	static final String COLON = ":";
 	static final String END = ">";
 	
-	static final String LOG_FILE = "dblog";
+	static final String LOG_FILE = "db.log";
 	static final String LINE_SEPARATOR = "\n";
 	
 	private static Logger logger;
@@ -51,13 +51,15 @@ public class Logger {
 		Map<Integer,Transaction> transactions = new HashMap<Integer,Transaction>();
 		for(String line : contents) {
 			if (!line.isEmpty()) {
-				switch (line.charAt(START.length())) {
+				switch (line.charAt(1)) {
 				case 'S': // Start transaction
 					int transactionId = Integer.parseInt(line.replace(START,"").replace(END,"").split(COMMA)[1]);
 					transactions.put(transactionId, new Transaction(transactionId));
+					break;
 				case 'C': // Commit transaction
 					int transId = Integer.parseInt(line.replace(START,"").replace(END,"").split(COMMA)[1]);
 					transactions.get(transId).commit();
+					break;
 				default:
 					LogRecord lr = LogRecord.parseRecord(line);
 					Transaction t = transactions.get(lr.getTransactionId());
