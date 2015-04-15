@@ -27,6 +27,7 @@ public class Database {
 	private String databaseFolderPath;
 	// Used to keep track of started/committed transactions.
 	private Map<Integer, Transaction> transactions = new HashMap<Integer, Transaction>();
+	private Logger logger;
 
 	/**
 	 * Constructor for the Database, will sync with the log file if it exists.
@@ -36,7 +37,8 @@ public class Database {
 	public Database(String databaseFolderPath) throws IOException {
 		
 		this.databaseFolderPath = databaseFolderPath;
-		syncWithLog();
+		logger = new Logger(databaseFolderPath + "/" + Logger.LOG_FILE);
+//		syncWithLog();
 	}
 
 	/**
@@ -47,7 +49,7 @@ public class Database {
 		
 		// Make sure this transaction ID has not yet been used.
 		if (!transactions.containsKey(transactionNum)) {
-			transactions.put(transactionNum, new Transaction(transactionNum));
+			transactions.put(transactionNum, new Transaction(transactionNum, logger));
 		}
 	}
 
@@ -96,7 +98,7 @@ public class Database {
 	 * @throws IOException If there is no directory at the databseFolderPath location.
 	 */
 	public void syncWithLog() throws IOException {
-		Collection<Transaction> recoveredLog = Logger.getLogger().recoverLog();
+		Collection<Transaction> recoveredLog = logger.recoverLog();
 		Relation cities = new Relation(databaseFolderPath + "/city.csv");
 		Relation countries = new Relation(databaseFolderPath + "/country.csv");
 		for (Transaction transaction: recoveredLog) {

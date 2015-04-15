@@ -18,17 +18,21 @@ public class Transaction implements Serializable {
 	private final int transactionId;
 	private final List<LogRecord> logRecords;
 	private boolean isCommitted;
+	private Logger logger;
 	
 	/**
 	 * Constructs a transaction
 	 * @param transactionId 
-	 * @param filename The file this transaction is associated with
+	 * @param logger The logger to log updates to
 	 */
-	public Transaction(int transactionId) {
+	public Transaction(int transactionId, Logger logger) {
 		this.transactionId = transactionId;
 		this.logRecords = new ArrayList<LogRecord>();
 		this.isCommitted = false;
-		Logger.getLogger().writeMessage(Logger.START + Logger.START_TRANSACTION + Logger.COMMA + transactionId + Logger.END);
+		this.logger = logger;
+		if (logger != null) {
+			logger.writeMessage(Logger.START + Logger.START_TRANSACTION + Logger.COMMA + transactionId + Logger.END);
+		}
 	}
 	
 	/**
@@ -48,11 +52,15 @@ public class Transaction implements Serializable {
 	
 	public void commit() {
 		isCommitted = true;
-		Logger.getLogger().writeMessage(Logger.START + Logger.COMMIT_TRANSACTION + Logger.COMMA + transactionId + Logger.END);
+		if (logger != null) {
+			logger.writeMessage(Logger.START + Logger.COMMIT_TRANSACTION + Logger.COMMA + transactionId + Logger.END);
+		}
 	}
 	
 	public void addLogRecord(LogRecord logRecord) {
 		logRecords.add(logRecord);
-		Logger.getLogger().writeMessage(logRecord.toString());
+		if (logger != null) {
+			logger.writeMessage(logRecord.toString());
+		}
 	}
 }

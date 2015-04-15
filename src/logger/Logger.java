@@ -22,23 +22,22 @@ public class Logger {
 	static final String COLON = ":";
 	static final String END = ">";
 	
-	static final String LOG_FILE = "db.log";
+	public static final String LOG_FILE = "db.log";
 	static final String LINE_SEPARATOR = "\n";
 	
-	private static Logger logger;
+	private String logFile;
 	
-	private Logger() {}
+	public Logger() {
+		logFile = LOG_FILE;
+	}
 	
-	public static Logger getLogger() {
-		if (logger == null) {
-			logger = new Logger();
-		}
-		return logger;
+	public Logger(String logfile) {
+		this.logFile = logfile;
 	}
 	
 	public void writeMessage(String message) {
 		synchronized(this) {
-			try (FileWriter fw = new FileWriter(new File(LOG_FILE),true)) {
+			try (FileWriter fw = new FileWriter(new File(logFile),true)) {
 				fw.append(message + LINE_SEPARATOR);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -47,14 +46,14 @@ public class Logger {
 	}
 	
 	public Collection<Transaction> recoverLog() {
-		String[] contents = readFile(LOG_FILE).split(LINE_SEPARATOR);
+		String[] contents = readFile(logFile).split(LINE_SEPARATOR);
 		Map<Integer,Transaction> transactions = new HashMap<Integer,Transaction>();
 		for(String line : contents) {
 			if (!line.isEmpty()) {
 				switch (line.charAt(1)) {
 				case 'S': // Start transaction
 					int transactionId = Integer.parseInt(line.replace(START,"").replace(END,"").split(COMMA)[1]);
-					transactions.put(transactionId, new Transaction(transactionId));
+					transactions.put(transactionId, new Transaction(transactionId, null));
 					break;
 				case 'C': // Commit transaction
 					int transId = Integer.parseInt(line.replace(START,"").replace(END,"").split(COMMA)[1]);
