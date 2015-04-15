@@ -45,7 +45,7 @@ public class SampleMain {
 		// Multiply every population in the countries relation by 1.02 (increase by 2%).
 		db1.update(1, "city", cityIndices, (value) -> true, cityIndices, (value) -> "\"" +
 				Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
-		// Commit the transaciton.
+		// Commit the transaction.
 		db1.commit(1);
 		
 		// Create a new Database object and sync it with the first database using its undo/redo log.
