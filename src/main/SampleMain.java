@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import relation.Database;
-import relation.Relation;
 
 /**
  * Sample use of the the Database class. In this case, we create two databases with identical
@@ -24,10 +23,6 @@ public class SampleMain {
 		// Make directories for the two databases.
 		new File("sampleDatabase1").mkdir();
 		new File("sampleDatabase2").mkdir();
-		File dbLog = new File("sampleDatabase1/db.log");
-		if (dbLog.exists()) {
-			dbLog.delete();
-		}
 		
 		// Copy the original relation files into both databases.
 		Files.copy(Paths.get("originalData/country.csv"), Paths.get("sampleDatabase1/country.csv"), StandardCopyOption.REPLACE_EXISTING);
