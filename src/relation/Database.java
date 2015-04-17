@@ -8,6 +8,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +31,7 @@ public class Database {
 	private String databaseFolderPath;
 	// Used to keep track of started/committed transactions.
 	private Map<Integer, Transaction> transactions = new HashMap<Integer, Transaction>();
+	// Every database has a logger associated with it.
 	private Logger logger;
 
 	/**
@@ -38,7 +43,6 @@ public class Database {
 		
 		this.databaseFolderPath = databaseFolderPath;
 		logger = new Logger(databaseFolderPath + "/" + Logger.LOG_FILE);
-//		syncWithLog();
 	}
 
 	/**
@@ -64,7 +68,7 @@ public class Database {
 		if (transactions.containsKey(transactionNum) && !transactions.get(transactionNum).isCommitted()) {
 			// Create a reader and writer for the operation's input/output.
 			Reader fileReader = new BufferedReader(new FileReader(databaseFolderPath + "/" + relationName + ".csv"));
-			Writer fileWriter = new BufferedWriter(new FileWriter(databaseFolderPath + "/" + relationName + "_update.csv"));
+			Writer fileWriter = new BufferedWriter(new FileWriter(databaseFolderPath + "/" + relationName + "_updated.csv"));
 
 			// Perform the update operation.
 			Operation update = new UpdateOperation(fileReader, fileWriter, relationName, compareOn, conditional, updateIndices, newValues);
@@ -73,10 +77,11 @@ public class Database {
 			update.join();
 
 			// Replace the old relation file with the new one.
-			File updated = new File(databaseFolderPath + "/" + relationName + "_updated.csv");
-			File old = new File(databaseFolderPath + "/" + relationName + ".csv");
-			if (!old.delete() || !updated.renameTo(old)) {
-				System.out.println("Failed to rename file, results in _updated.csv");
+			try {
+				Files.move(Paths.get(databaseFolderPath + "/" + relationName + "_updated.csv"),
+					Paths.get(databaseFolderPath + "/" + relationName + ".csv"), StandardCopyOption.REPLACE_EXISTING);
+			} catch (FileSystemException e) {
+				System.err.println("Error renaming relation file, file exists as " + relationName + "_updated.csv");
 			}
 		}
 	}
@@ -98,37 +103,45 @@ public class Database {
 	 * @throws IOException If there is no directory at the databseFolderPath location.
 	 */
 	public void syncWithLog() throws IOException {
+		
+		// Get the list of logged transactions from the db.log file if it exists.
 		Collection<Transaction> recoveredLog = logger.recoverLog();
-		Relation cities = new Relation(databaseFolderPath + "/city.csv", "city");
-		Relation countries = new Relation(databaseFolderPath + "/country.csv", "country");
+		// Establish a map of all the relations in this database based on the csv files in the directory.
+		HashMap<String, Relation> relations = new HashMap<String, Relation>();
+		for (File f : new File(databaseFolderPath).listFiles()) {
+			if (f.toPath().toString().substring(f.toPath().toString().lastIndexOf(".")+1).equals("csv")) {
+				Relation r = new Relation(databaseFolderPath + "/" + f.toPath().getFileName(), f.toPath().getFileName().toString().substring(0, f.toPath().getFileName().toString().lastIndexOf(".")));
+				String relationName = f.toPath().getFileName().toString().substring(0, f.toPath().getFileName().toString().lastIndexOf("."));
+				relations.put(relationName, r);
+			}
+		}
+		
+		// Iterate through the transactions in the log.
 		for (Transaction transaction: recoveredLog) {
 			if (transaction.isCommitted()) {
 				// Redo the transaction.
 				List<LogRecord> redoLogs = transaction.getLogRecords();
 				for (LogRecord log : redoLogs) {
-					if(log.getRelationName().equals("city")) {
-						cities.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getNewValue());
-					} else {
-						countries.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getNewValue());
+					if (relations.containsKey(log.getRelationName())) {
+						relations.get(log.getRelationName()).doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getNewValue());
 					}
 				}
 			} else {
 				// Undo the transaction.
 				List<LogRecord> undoLogs = transaction.getLogRecords();
 				for (LogRecord log : undoLogs) {
-					if (log.getRelationName().equals("city")) {
-						cities.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
-					} else {
-						countries.doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
+					if (relations.containsKey(log.getRelationName())) {
+						relations.get(log.getRelationName()).doUpdate(log.getRowNumber(), log.getColumnNumber(), log.getOldValue());
 					}
 				}
 			}
 		}
-		cities.writeRelationToFile(databaseFolderPath + "/newCity.csv");
-		countries.writeRelationToFile(databaseFolderPath + "/newCountry.csv");
-	}
-	
-	public String getDatabaseFolderPath() {
-		return databaseFolderPath;
+		
+		// Overwrite the existing relation file with the new data.
+		for (String relationName : relations.keySet()) {
+			relations.get(relationName).writeRelationToFile(databaseFolderPath + "/" + relationName + "_synced.csv");
+			Files.move(Paths.get(databaseFolderPath + "/" + relationName + "_synced.csv"),
+					Paths.get(databaseFolderPath + "/" + relationName + ".csv"), StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 }

@@ -17,7 +17,6 @@ public class Relation {
 //	private String[][] tuples;
 	static final int BLOCK_SIZE = 20;
 	private String relationDir;
-	private int numBlocks;
 	private String relationName;
 
 	/**
@@ -54,7 +53,6 @@ public class Relation {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			numBlocks = ((int) (rowIndex / BLOCK_SIZE));
 		}
 	}
 	
@@ -64,7 +62,7 @@ public class Relation {
 	 */
 	public void writeRelationToFile(String fileName) {
 		try (FileWriter fw = new FileWriter(new File(fileName))) {
-			for (int i = 0; i <= numBlocks; i++) {
+			for (int i = 0; i < new File(relationDir).listFiles().length; i++) {
 				fw.append(Logger.readFile(relationDir + "/" + i));
 			}
 		} catch (IOException e) {
