@@ -99,8 +99,8 @@ public class Database {
 	 */
 	public void syncWithLog() throws IOException {
 		Collection<Transaction> recoveredLog = logger.recoverLog();
-		Relation cities = new Relation(databaseFolderPath + "/city.csv");
-		Relation countries = new Relation(databaseFolderPath + "/country.csv");
+		Relation cities = new Relation(databaseFolderPath + "/city.csv", "city");
+		Relation countries = new Relation(databaseFolderPath + "/country.csv", "country");
 		for (Transaction transaction: recoveredLog) {
 			if (transaction.isCommitted()) {
 				// Redo the transaction.
@@ -126,5 +126,9 @@ public class Database {
 		}
 		cities.writeRelationToFile(databaseFolderPath + "/newCity.csv");
 		countries.writeRelationToFile(databaseFolderPath + "/newCountry.csv");
+	}
+	
+	public String getDatabaseFolderPath() {
+		return databaseFolderPath;
 	}
 }

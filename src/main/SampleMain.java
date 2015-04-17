@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import relation.Database;
+import relation.Relation;
 
 /**
  * Sample use of the the QueryPlanner. In this case, we extract all cities whose
@@ -24,6 +25,7 @@ public class SampleMain {
 		
 		// Create a new Database object and update the relations as requested in the project spec.
 		Database db = new Database("sampleDatabase");
+		
 		// Begin a transaction.
 		db.startTransaction(1);
 		// Multiply every population in the countries relation by 1.02 (increase by 2%).
@@ -32,7 +34,7 @@ public class SampleMain {
 		// Multiply every population in the countries relation by 1.02 (increase by 2%).
 		db.update(1, "city", cityIndices, (value) -> true, cityIndices, (value) -> "\"" +
 				Integer.toString((int)(Integer.parseInt(value.get(0).replace("\"", "")) * 1.02)) + "\"");
-		// Commit the transaciton.
+		// Commit the transaction.
 		db.commit(1);
 		// This method can be used at any time to sync with the database log.
 		db.syncWithLog();
